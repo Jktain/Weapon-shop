@@ -10,7 +10,7 @@ public class TopHUD : MonoBehaviour
     private void Update()
     {
         goldText.text = FormatUtils.FormatNumber(Inventory.gold);
-        woodText.text = FormatUtils.FormatNumber(Inventory.wood);
-        metalText.text = FormatUtils.FormatNumber(Inventory.metal);
+        woodText.text = FormatUtils.FormatNumber(Inventory.resourceCounts[0]);
+        metalText.text = FormatUtils.FormatNumber(Inventory.resourceCounts[1]);
     }
 }

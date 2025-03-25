@@ -12,13 +12,19 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private Button buildButton;
 
     [SerializeField] private GameObject upgradeSection;
+    [SerializeField] private TextMeshProUGUI buildCostText;
     [SerializeField] private TextMeshProUGUI speedLevelText;
+    [SerializeField] private TextMeshProUGUI speedUpgradeCostText;
     [SerializeField] private TextMeshProUGUI secondUpgradeLevelText;
+    [SerializeField] private TextMeshProUGUI secondUpgradeCostText;
     [SerializeField] private Button upgradeSpeedButton;
     [SerializeField] private Button upgradeSecondButton;
 
     private WeaponCrafter currentCrafter;
     private ResourceProducer currentProducer;
+
+    public static int[] speedUpgradeLevels = { 1, 0, 0, 0, 1, 1};
+    public static int[] secondUpgradeLevels = { 1, 1, 1, 1, 1, 1 };
 
     public void OpenForCrafter(WeaponCrafter crafter)
     {
@@ -26,7 +32,7 @@ public class UpgradeUI : MonoBehaviour
         currentProducer = null;
         panel.SetActive(true);
 
-        if (crafter.GetSpeedLevel() == 0)
+        if (speedUpgradeLevels[crafter.weaponIndex] == 0)
         {
             buildSection.SetActive(true);
             upgradeSection.SetActive(false);
@@ -57,7 +63,7 @@ public class UpgradeUI : MonoBehaviour
     public void Build()
     {
         currentCrafter?.BuildSpot();
-        OpenForCrafter(currentCrafter); // оновлюємо вигляд на панель покращення
+        OpenForCrafter(currentCrafter);
     }
 
     public void UpgradeSpeed()
@@ -90,15 +96,17 @@ public class UpgradeUI : MonoBehaviour
 
     private void UpdateCrafterUI()
     {
-        speedLevelText.text = $"Швидкість: {currentCrafter.GetSpeedLevel()} рівень";
-        secondUpgradeLevelText.text = $"Ціна продажу: {currentCrafter.GetPriceLevel()} рівень";
+        speedLevelText.text = $"Produce speed\n{speedUpgradeLevels[currentCrafter.weaponIndex]} lvl";
+        speedUpgradeCostText.text = $"{currentCrafter.speedUpgradeCost}";
+        secondUpgradeLevelText.text = $"Sell level\n{secondUpgradeLevels[currentCrafter.weaponIndex]} lvl";
+        secondUpgradeCostText.text = $"{currentCrafter.priceUpgradeCost}";
     }
 
     private void UpdateProducerUI()
     {
-        speedLevelText.text = $"Швидкість: {currentProducer.GetSpeedLevel()} рівень";
-        secondUpgradeLevelText.text = $"Кількість за тік: {currentProducer.GetAmountLevel()} рівень";
+        speedLevelText.text = $"Produce speed\n{speedUpgradeLevels[4 + currentProducer.resourceIndex]} lvl";
+        speedUpgradeCostText.text = $"{currentProducer.speedUpgradeCost}";
+        secondUpgradeLevelText.text = $"Produce amount\n{secondUpgradeLevels[4 + currentProducer.resourceIndex]} lvl";
+        secondUpgradeCostText.text = $"{currentProducer.amountUpgradeCost}";
     }
-
-    public void Close() => panel.SetActive(false);
 }

@@ -2,46 +2,40 @@ using UnityEngine;
 
 public class ResourceProducer : MonoBehaviour
 {
-    [SerializeField] private string resourceName = "wood";
-
     [SerializeField] private int amountPerTick = 1;
     [SerializeField] private float tickRate = 5f;
 
-    [SerializeField] private int speedUpgradeCost = 20;
-    [SerializeField] private int amountUpgradeCost = 25;
-
     [SerializeField] private int maxLevel = 4;
-    private int speedLevel = 1;
-    private int amountLevel = 1;
+
+    public int resourceIndex = 0;
+    public int speedUpgradeCost;
+    public int amountUpgradeCost = 40;
 
     private void Start()
     {
+        speedUpgradeCost = speedUpgradeCost * UpgradeUI.speedUpgradeLevels[4 + resourceIndex];
+        tickRate = tickRate - 1f * (UpgradeUI.speedUpgradeLevels[4 + resourceIndex] - 1);
+        amountUpgradeCost = amountUpgradeCost * UpgradeUI.secondUpgradeLevels[4 + resourceIndex];
+        amountPerTick = amountPerTick * UpgradeUI.secondUpgradeLevels[4 + resourceIndex];
+
         InvokeRepeating(nameof(ProduceResource), tickRate, tickRate);
     }
 
     private void ProduceResource()
     {
-        switch (resourceName)
-        {
-            case "wood":
-                Inventory.wood += amountPerTick;
-                break;
-            case "metal":
-                Inventory.metal += amountPerTick;
-                break;
-        }
+        Inventory.resourceCounts[resourceIndex] += amountPerTick;
     }
 
     public void UpgradeSpeed()
     {
-        if (speedLevel >= maxLevel) return;
+        if (UpgradeUI.speedUpgradeLevels[4 + resourceIndex] >= maxLevel) return;
 
         if (Inventory.gold >= speedUpgradeCost)
         {
             Inventory.gold -= speedUpgradeCost;
             tickRate -= 1f;
             speedUpgradeCost += 15;
-            speedLevel++;
+            UpgradeUI.speedUpgradeLevels[4 + resourceIndex]++;
 
             ResetTimer();
             Debug.Log(tickRate);
@@ -50,14 +44,14 @@ public class ResourceProducer : MonoBehaviour
 
     public void UpgradeAmount()
     {
-        if (amountLevel >= maxLevel) return;
+        if (UpgradeUI.secondUpgradeLevels[4 + resourceIndex] >= maxLevel) return;
 
         if (Inventory.gold >= amountUpgradeCost)
         {
             Inventory.gold -= amountUpgradeCost;
             amountPerTick += 1;
             amountUpgradeCost += 20;
-            amountLevel++;
+            UpgradeUI.secondUpgradeLevels[4 + resourceIndex]++;
         }
     }
 
@@ -65,14 +59,5 @@ public class ResourceProducer : MonoBehaviour
     {
         CancelInvoke();
         InvokeRepeating(nameof(ProduceResource), tickRate, tickRate);
-    }
-
-    // Методи для збереження
-    public int GetSpeedLevel() => speedLevel;
-    public int GetAmountLevel() => amountLevel;
-    public void SetLevels(int speed, int amount)
-    {
-        speedLevel = Mathf.Clamp(speed, 1, maxLevel);
-        amountLevel = Mathf.Clamp(amount, 1, maxLevel);
     }
 }

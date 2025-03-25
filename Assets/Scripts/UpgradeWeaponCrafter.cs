@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 public class UpgradeWeaponCrafter : MonoBehaviour
 {
     [SerializeField] private UpgradeUI upgradeUI;
-    [SerializeField] private GameObject panel;
+    [SerializeField] private GameObject otherButtons;
     private WeaponCrafter crafter;
 
 
@@ -18,6 +18,7 @@ public class UpgradeWeaponCrafter : MonoBehaviour
         if (EventSystem.current.IsPointerOverGameObject())
             return;
 
+        otherButtons.gameObject.SetActive(false);
         upgradeUI.OpenForCrafter(crafter);
     }
 }

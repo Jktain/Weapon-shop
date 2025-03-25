@@ -3,7 +3,6 @@ using UnityEngine;
 public class WeaponCrafter : MonoBehaviour
 {
     [SerializeField] private GameObject spot;
-    [SerializeField] private int weaponIndex = 0;
 
     [SerializeField] private float craftTime = 6f;
     [SerializeField] private int sellPrice = 10;
@@ -11,25 +10,27 @@ public class WeaponCrafter : MonoBehaviour
     [SerializeField] private int woodCost = 1;
     [SerializeField] private int metalCost = 2;
 
-    [SerializeField] private int speedUpgradeCost = 30;
-    [SerializeField] private int priceUpgradeCost = 40;
-
     [SerializeField] private int maxLevel = 4;
-    [SerializeField] private int speedLevel = 1;
-    private int priceLevel = 1;
+
+    public int weaponIndex = 0;
+    public int speedUpgradeCost;
+    public int priceUpgradeCost = 40;
 
     private void Start()
     {
-        InvokeRepeating(nameof(CraftWeapon), craftTime, craftTime);
-        Inventory.itemPrices[weaponIndex] = sellPrice;
+        if(UpgradeUI.speedUpgradeLevels[weaponIndex] > 0)
+        {
+            Inventory.gold += priceUpgradeCost;
+            BuildSpot();
+        }
     }
 
     private void CraftWeapon()
     {
-        if (Inventory.wood >= woodCost && Inventory.metal >= metalCost)
+        if (Inventory.resourceCounts[0] >= woodCost && Inventory.resourceCounts[1] >= metalCost)
         {
-            Inventory.wood -= woodCost;
-            Inventory.metal -= metalCost;
+            Inventory.resourceCounts[0] -= woodCost;
+            Inventory.resourceCounts[1] -= metalCost;
             Inventory.itemCounts[weaponIndex]++;
         }
         else
@@ -40,57 +41,62 @@ public class WeaponCrafter : MonoBehaviour
 
     public void UpgradeSpeed()
     {
-        if (speedLevel >= maxLevel) return;
+        if (UpgradeUI.speedUpgradeLevels[weaponIndex] >= maxLevel) return;
 
         if (Inventory.gold >= speedUpgradeCost)
         {
             Inventory.gold -= speedUpgradeCost;
             craftTime -= 1f;
             speedUpgradeCost += 30;
-            speedLevel++;
+            UpgradeUI.speedUpgradeLevels[weaponIndex]++;
 
             ResetTimer();
-
-            Debug.Log(craftTime);
         }
     }
 
     public void UpgradePrice()
     {
-        if (priceLevel >= maxLevel) return;
+        if (UpgradeUI.secondUpgradeLevels[weaponIndex] >= maxLevel) return;
 
         if (Inventory.gold >= priceUpgradeCost)
         {
             Inventory.gold -= priceUpgradeCost;
-            sellPrice += 5;
+            Inventory.itemPrices[weaponIndex] += 5;
             priceUpgradeCost += 35;
-            priceLevel++;
-
-            Inventory.itemPrices[weaponIndex] = sellPrice;
+            UpgradeUI.secondUpgradeLevels[weaponIndex]++;
         }
     }
 
     public void BuildSpot()
     {
-        Instantiate(spot);
-        speedLevel++;
-        Inventory.buildedCrafters.Add(Inventory.itemNames[weaponIndex]);
-        Debug.Log(Inventory.buildedCrafters[weaponIndex]);
+        if (Inventory.gold >= priceUpgradeCost)
+        {
+            Inventory.gold -= priceUpgradeCost;
+            Instantiate(spot, transform);
+
+            if(UpgradeUI.speedUpgradeLevels[weaponIndex] < 1)
+            {
+                UpgradeUI.speedUpgradeLevels[weaponIndex] = 1;
+            }
+
+            Inventory.buildedCrafters.Add(Inventory.itemNames[weaponIndex]);
+
+            speedUpgradeCost = speedUpgradeCost * UpgradeUI.speedUpgradeLevels[weaponIndex];
+            craftTime = craftTime - 1f * (UpgradeUI.speedUpgradeLevels[weaponIndex] - 1);
+            priceUpgradeCost = priceUpgradeCost * UpgradeUI.secondUpgradeLevels[weaponIndex];
+
+            if(Inventory.itemPrices[weaponIndex] <= 0)
+            {
+                Inventory.itemPrices[weaponIndex] = sellPrice;
+            }
+
+            InvokeRepeating(nameof(CraftWeapon), craftTime, craftTime);
+        }
     }
 
     private void ResetTimer()
     {
         CancelInvoke();
         InvokeRepeating(nameof(CraftWeapon), craftTime, craftTime);
-    }
-
-    public int GetSpeedLevel() => speedLevel;
-    public int GetPriceLevel() => priceLevel;
-    public int GetSellPrice() => sellPrice;
-
-    public void SetLevels(int speed, int price)
-    {
-        speedLevel = Mathf.Clamp(speed, 1, maxLevel);
-        priceLevel = Mathf.Clamp(price, 1, maxLevel);
     }
 }
