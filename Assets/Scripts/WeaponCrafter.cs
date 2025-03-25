@@ -2,7 +2,8 @@ using UnityEngine;
 
 public class WeaponCrafter : MonoBehaviour
 {
-    [SerializeField] private GameObject spot;
+    [SerializeField] private GameObject crafterPrefab;
+    [SerializeField] private GameObject spotPlatform;
 
     [SerializeField] private float craftTime = 6f;
     [SerializeField] private int sellPrice = 10;
@@ -72,7 +73,8 @@ public class WeaponCrafter : MonoBehaviour
         if (Inventory.gold >= priceUpgradeCost)
         {
             Inventory.gold -= priceUpgradeCost;
-            Instantiate(spot, transform);
+            Destroy(spotPlatform.gameObject);
+            Instantiate(crafterPrefab, transform);
 
             if(UpgradeUI.speedUpgradeLevels[weaponIndex] < 1)
             {
