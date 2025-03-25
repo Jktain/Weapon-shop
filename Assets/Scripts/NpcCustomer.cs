@@ -4,14 +4,14 @@ using UnityEngine.UI;
 
 public class NpcCustomer : MonoBehaviour
 {
-    [SerializeField] private string desiredItem = "sword";
+    [SerializeField] private int desiredItemIndex = 0;
     [SerializeField] private int price = 10;
     [SerializeField] private float checkInterval = 1f;
 
     [SerializeField] private GameObject bubblePrefab;
-    [SerializeField] private Sprite swordSprite;
-    [SerializeField] private Sprite shieldSprite;
-
+    [SerializeField] private Sprite[] itemsSprite;
+    private Vector3 spawnPoint;
+    private bool returning = false;
     private GameObject bubbleUI;
 
     private Transform shopEntrance;
@@ -26,11 +26,30 @@ public class NpcCustomer : MonoBehaviour
 
     private void Start()
     {
-        SpawnBubble();
-
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
-        agent.SetDestination(shopEntrance.position);
+
+        ShopQueueManager queue = FindObjectOfType<ShopQueueManager>();
+        var position = queue.GetAvailableQueuePosition();
+
+        if (position != null)
+        {
+            queue.JoinQueue(this);
+            agent.SetDestination(position.position);
+        }
+        else
+        {
+            Debug.Log("Черга повна, NPC не буде обслуговуватись.");
+            Destroy(gameObject);
+        }
+
+        desiredItemIndex = Random.Range(0, Inventory.buildedCrafters.Count);
+        SpawnBubble();
+    }
+
+    public void SetSpawnPoint(Vector3 point)
+    {
+        spawnPoint = point;
     }
 
     public void SetShop(Transform target)
@@ -44,16 +63,7 @@ public class NpcCustomer : MonoBehaviour
         bubbleUI.transform.localPosition = new Vector3(0, 2, 0);
 
         var icon = bubbleUI.transform.Find("Icon").GetComponent<Image>();
-
-        switch (desiredItem)
-        {
-            case "sword":
-                icon.sprite = swordSprite;
-                break;
-            case "shield":
-                icon.sprite = shieldSprite;
-                break;
-        }
+        icon.sprite = itemsSprite[desiredItemIndex];
     }
 
     private void Update()
@@ -74,46 +84,47 @@ public class NpcCustomer : MonoBehaviour
             hasArrived = true;
             InvokeRepeating(nameof(TryBuy), 0f, checkInterval);
         }
+
+        if (returning && !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public void MoveTo(Vector3 target)
+    {
+        if (agent != null)
+            agent.SetDestination(target);
     }
 
     private void TryBuy()
     {
         if (isSatisfied) return;
 
+        var queue = FindObjectOfType<ShopQueueManager>();
+        if (!queue.IsFirstInQueue(this)) return;
+
         bool success = false;
 
-        switch (desiredItem)
+        if (Inventory.itemCounts[desiredItemIndex] > 0)
         {
-            case "sword":
-                if (Inventory.swords > 0)
-                {
-                    Inventory.swords--;
-                    Inventory.gold += price;
-                    success = true;
-                }
-                break;
-
-            case "shield":
-                if (Inventory.shields > 0)
-                {
-                    Inventory.shields--;
-                    Inventory.gold += price;
-                    success = true;
-                }
-                break;
+            Inventory.itemCounts[desiredItemIndex]--;
+            Inventory.gold += price;
+            success = true;
         }
 
         if (success)
         {
             isSatisfied = true;
             CancelInvoke(nameof(TryBuy));
-            Debug.Log($"NPC купив {desiredItem} за {price} золота. Кількість золота: {Inventory.gold}");
-            Destroy(gameObject, 1f);
-        }
 
-        if (isSatisfied && bubbleUI)
-        {
+            queue.LeaveQueue(this);
+
             Destroy(bubbleUI);
+
+            returning = true;
+            agent.SetDestination(spawnPoint);
+            NpcSpawner.currentNpcCount--;
         }
     }
 }

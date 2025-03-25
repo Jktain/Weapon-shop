@@ -17,7 +17,6 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private Button upgradeSpeedButton;
     [SerializeField] private Button upgradeSecondButton;
 
-    // Посилання на поточний об’єкт
     private WeaponCrafter currentCrafter;
     private ResourceProducer currentProducer;
 

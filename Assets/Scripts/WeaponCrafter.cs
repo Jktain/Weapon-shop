@@ -3,7 +3,7 @@ using UnityEngine;
 public class WeaponCrafter : MonoBehaviour
 {
     [SerializeField] private GameObject spot;
-    [SerializeField] private string weaponName = "sword";
+    [SerializeField] private int weaponIndex = 0;
 
     [SerializeField] private float craftTime = 6f;
     [SerializeField] private int sellPrice = 10;
@@ -21,6 +21,7 @@ public class WeaponCrafter : MonoBehaviour
     private void Start()
     {
         InvokeRepeating(nameof(CraftWeapon), craftTime, craftTime);
+        Inventory.itemPrices[weaponIndex] = sellPrice;
     }
 
     private void CraftWeapon()
@@ -29,19 +30,7 @@ public class WeaponCrafter : MonoBehaviour
         {
             Inventory.wood -= woodCost;
             Inventory.metal -= metalCost;
-
-            switch (weaponName)
-            {
-                case "sword":
-                    Inventory.swords += 1;
-                    break;
-                case "shield":
-                    Inventory.shields += 1;
-                    break;
-            }
-
-            Debug.Log($"{weaponName} створено!");
-            Debug.Log($"Створено {Inventory.swords} мечів");
+            Inventory.itemCounts[weaponIndex]++;
         }
         else
         {
@@ -76,6 +65,8 @@ public class WeaponCrafter : MonoBehaviour
             sellPrice += 5;
             priceUpgradeCost += 35;
             priceLevel++;
+
+            Inventory.itemPrices[weaponIndex] = sellPrice;
         }
     }
 
@@ -83,6 +74,8 @@ public class WeaponCrafter : MonoBehaviour
     {
         Instantiate(spot);
         speedLevel++;
+        Inventory.buildedCrafters.Add(Inventory.itemNames[weaponIndex]);
+        Debug.Log(Inventory.buildedCrafters[weaponIndex]);
     }
 
     private void ResetTimer()
