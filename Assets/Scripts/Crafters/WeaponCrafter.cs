@@ -14,7 +14,7 @@ public class WeaponCrafter : MonoBehaviour
     [SerializeField] private int maxLevel = 4;
 
     public int weaponIndex = 0;
-    public int speedUpgradeCost;
+    public int speedUpgradeCost = 40;
     public int priceUpgradeCost = 40;
 
     private void Start()
@@ -80,8 +80,6 @@ public class WeaponCrafter : MonoBehaviour
             {
                 UpgradeUI.speedUpgradeLevels[weaponIndex] = 1;
             }
-
-            Inventory.buildedCrafters.Add(Inventory.itemNames[weaponIndex]);
 
             speedUpgradeCost = speedUpgradeCost * UpgradeUI.speedUpgradeLevels[weaponIndex];
             craftTime = craftTime - 1f * (UpgradeUI.speedUpgradeLevels[weaponIndex] - 1);

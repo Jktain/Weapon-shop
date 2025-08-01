@@ -43,7 +43,11 @@ public class NpcCustomer : MonoBehaviour
             Destroy(gameObject);
         }
 
-        desiredItemIndex = Random.Range(0, Inventory.buildedCrafters.Count);
+        do
+        {
+            desiredItemIndex = Random.Range(0, Inventory.itemPrices.Length);
+        } while (Inventory.itemPrices[desiredItemIndex] == 0);
+        
         SpawnBubble();
     }
 

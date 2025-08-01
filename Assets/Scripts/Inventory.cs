@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -9,7 +10,5 @@ public class Inventory : MonoBehaviour
 
     public static string[] itemNames = {"sword", "shield", "bow", "axe"};
     public static int[] itemCounts = {0, 0, 0, 0};
-    public static int[] itemPrices = { 0, 0, 0, 0};
-
-    public static List<string> buildedCrafters = new List<string> { };
+    public static int[] itemPrices = {20, 0, 0, 0};
 }
